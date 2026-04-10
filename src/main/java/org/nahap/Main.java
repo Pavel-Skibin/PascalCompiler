@@ -13,11 +13,14 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.nahap.ast.ProgramNode;
 import org.nahap.ast.visitor.AstMermaidPrinter;
 import org.nahap.ast.visitor.AstPrinter;
+import org.nahap.optimize.AstOptimizer;
 import org.nahap.parser.AstBuilder;
 import org.nahap.parser.PascalLexer;
 import org.nahap.parser.PascalParser;
 import org.nahap.parser.SyntaxErrorListener;
 import org.nahap.runtime.PascalInterpreter;
+import org.nahap.semantic.SemanticAnalysisResult;
+import org.nahap.semantic.SemanticAnalyzer;
 
 public class Main {
     private static final String AST_MARKDOWN_FILE = "ast.md";
@@ -26,10 +29,16 @@ public class Main {
 
     private static final String INLINE_PASCAL_CODE =
             """
-            program Demo;
-            begin
-            WriteLn('Hello');
-            end.
+                    program BasicDemo;
+                    var
+                      a, b, c : integer;
+                    begin
+                      a := 10;
+                      b := 20;
+                      WriteLn('a = ', a);
+                      WriteLn('b = ', b);
+                      WriteLn('sum = ', (a + b) * 3 + 2);
+                    end.
             """;
 
     public static void main(String[] args) {
@@ -54,15 +63,29 @@ public class Main {
             AstBuilder builder = new AstBuilder();
             ProgramNode program = builder.build(parseTree);
 
+            SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer();
+            SemanticAnalysisResult semanticResult = semanticAnalyzer.analyze(program);
+            if (semanticResult.hasErrors()) {
+                for (var diagnostic : semanticResult.getDiagnostics()) {
+                    System.err.println("Semantic error: " + diagnostic.getMessage());
+                }
+                System.exit(1);
+                return;
+            }
+
+            ProgramNode typedProgram = semanticResult.getProgram();
+            AstOptimizer optimizer = new AstOptimizer();
+            ProgramNode optimizedProgram = optimizer.optimize(typedProgram);
+
             AstPrinter astPrinter = new AstPrinter();
-            System.out.print(astPrinter.print(program));
+            System.out.print(astPrinter.print(optimizedProgram));
 
             AstMermaidPrinter mermaidPrinter = new AstMermaidPrinter();
-            String markdown = toMarkdown(mermaidPrinter.print(program));
+            String markdown = toMarkdown(mermaidPrinter.print(optimizedProgram));
             saveAstMarkdown(markdown);
 
             PascalInterpreter interpreter = new PascalInterpreter();
-            String executionOutput = interpreter.execute(program);
+            String executionOutput = interpreter.execute(optimizedProgram);
 
             System.out.println("Program output:");
             if (executionOutput.isEmpty()) {
