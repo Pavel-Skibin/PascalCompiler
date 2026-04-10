@@ -8,6 +8,7 @@ import org.nahap.ast.decl.ProcedureDeclaration;
 import org.nahap.ast.decl.VariableDeclaration;
 import org.nahap.ast.expr.ArrayAccessExpression;
 import org.nahap.ast.expr.BinaryExpression;
+import org.nahap.ast.expr.CastExpression;
 import org.nahap.ast.expr.FunctionCallExpression;
 import org.nahap.ast.expr.LiteralExpression;
 import org.nahap.ast.expr.UnaryExpression;
@@ -69,6 +70,8 @@ public interface AstVisitor<T> {
     T visitReadStatement(ReadStatement node);
 
     T visitBinaryExpression(BinaryExpression node);
+
+    T visitCastExpression(CastExpression node);
 
     T visitUnaryExpression(UnaryExpression node);
 

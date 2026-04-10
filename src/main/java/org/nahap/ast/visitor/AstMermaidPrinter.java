@@ -11,6 +11,7 @@ import org.nahap.ast.decl.ProcedureDeclaration;
 import org.nahap.ast.decl.VariableDeclaration;
 import org.nahap.ast.expr.ArrayAccessExpression;
 import org.nahap.ast.expr.BinaryExpression;
+import org.nahap.ast.expr.CastExpression;
 import org.nahap.ast.expr.Expression;
 import org.nahap.ast.expr.FunctionCallExpression;
 import org.nahap.ast.expr.LiteralExpression;
@@ -263,6 +264,13 @@ public final class AstMermaidPrinter implements AstVisitor<String> {
         String id = createNode("BinaryExpression: " + node.getOperator());
         connect(id, "Left", node.getLeft());
         connect(id, "Right", node.getRight());
+        return id;
+    }
+
+    @Override
+    public String visitCastExpression(CastExpression node) {
+        String id = createNode("CastExpression -> " + node.getTargetType());
+        connect(id, "Expression", node.getExpression());
         return id;
     }
 
