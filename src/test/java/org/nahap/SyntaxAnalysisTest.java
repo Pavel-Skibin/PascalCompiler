@@ -30,4 +30,15 @@ class SyntaxAnalysisTest {
         assertFalse(result.syntaxErrors().hasErrors());
         assertNotNull(result.program());
     }
+
+    @Test
+    void parserHandlesAdditionalValidProgramsSyntax() throws Exception {
+        var recursionResult = CompilerTestUtils.parseFile(Path.of("src/test/resources/valid_recursion_factorial_file.pas"));
+        assertFalse(recursionResult.syntaxErrors().hasErrors());
+        assertNotNull(recursionResult.program());
+
+        var controlFlowResult = CompilerTestUtils.parseFile(Path.of("src/test/resources/valid_control_flow_file.pas"));
+        assertFalse(controlFlowResult.syntaxErrors().hasErrors());
+        assertNotNull(controlFlowResult.program());
+    }
 }

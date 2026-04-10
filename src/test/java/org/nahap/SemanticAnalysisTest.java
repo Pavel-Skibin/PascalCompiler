@@ -57,4 +57,34 @@ class SemanticAnalysisTest {
         var semantic = CompilerTestUtils.semantic(parsed.program());
         assertFalse(semantic.hasErrors());
     }
+
+    @Test
+    void invalidFileProgramProcedureUsedAsFunctionReportsDiagnostic() throws Exception {
+      var parsed = CompilerTestUtils.parseFile(Path.of("src/test/resources/invalid_semantic_proc_as_function_file.pas"));
+      assertFalse(parsed.syntaxErrors().hasErrors());
+
+      var semantic = CompilerTestUtils.semantic(parsed.program());
+      assertTrue(semantic.hasErrors());
+      assertTrue(semantic.getDiagnostics().stream().anyMatch(d -> d.getMessage().contains("Procedure used as function")));
+    }
+
+    @Test
+    void invalidFileProgramWrongArgumentTypeReportsDiagnostic() throws Exception {
+      var parsed = CompilerTestUtils.parseFile(Path.of("src/test/resources/invalid_semantic_wrong_argument_type_file.pas"));
+      assertFalse(parsed.syntaxErrors().hasErrors());
+
+      var semantic = CompilerTestUtils.semantic(parsed.program());
+      assertTrue(semantic.hasErrors());
+      assertTrue(semantic.getDiagnostics().stream().anyMatch(d -> d.getMessage().contains("Type mismatch in argument 1")));
+    }
+
+    @Test
+    void invalidFileProgramWrongArgumentCountReportsDiagnostic() throws Exception {
+      var parsed = CompilerTestUtils.parseFile(Path.of("src/test/resources/invalid_semantic_wrong_argument_count_file.pas"));
+      assertFalse(parsed.syntaxErrors().hasErrors());
+
+      var semantic = CompilerTestUtils.semantic(parsed.program());
+      assertTrue(semantic.hasErrors());
+      assertTrue(semantic.getDiagnostics().stream().anyMatch(d -> d.getMessage().contains("Wrong argument count")));
+    }
 }

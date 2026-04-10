@@ -46,4 +46,32 @@ class InterpreterPipelineTest {
         var semantic = CompilerTestUtils.semantic(parsed.program());
         assertTrue(semantic.hasErrors());
     }
+
+    @Test
+    void fullPipelineExecutesRecursionProgramFromFile() throws Exception {
+        var parsed = CompilerTestUtils.parseFile(Path.of("src/test/resources/valid_recursion_factorial_file.pas"));
+        assertFalse(parsed.syntaxErrors().hasErrors());
+
+        var semantic = CompilerTestUtils.semantic(parsed.program());
+        assertFalse(semantic.hasErrors());
+
+        var optimized = CompilerTestUtils.optimize(semantic.getProgram());
+        String output = new PascalInterpreter().execute(optimized);
+
+        assertTrue(output.contains("fact=720"));
+    }
+
+    @Test
+    void fullPipelineExecutesControlFlowProgramFromFile() throws Exception {
+        var parsed = CompilerTestUtils.parseFile(Path.of("src/test/resources/valid_control_flow_file.pas"));
+        assertFalse(parsed.syntaxErrors().hasErrors());
+
+        var semantic = CompilerTestUtils.semantic(parsed.program());
+        assertFalse(semantic.hasErrors());
+
+        var optimized = CompilerTestUtils.optimize(semantic.getProgram());
+        String output = new PascalInterpreter().execute(optimized);
+
+        assertTrue(output.contains("ok=20"));
+    }
 }
