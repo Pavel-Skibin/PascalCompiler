@@ -23,6 +23,7 @@ import org.nahap.ast.decl.VariableDeclaration;
 import org.nahap.ast.expr.ArrayAccessExpression;
 import org.nahap.ast.expr.BinaryExpression;
 import org.nahap.ast.expr.BinaryOperator;
+import org.nahap.ast.expr.CastExpression;
 import org.nahap.ast.expr.Expression;
 import org.nahap.ast.expr.FunctionCallExpression;
 import org.nahap.ast.expr.LiteralExpression;
@@ -311,6 +312,26 @@ public final class PascalInterpreter implements AstVisitor<Object> {
             case PLUS -> plus(value);
             case MINUS -> minus(value);
             case NOT -> !toBoolean(value);
+        };
+    }
+
+    @Override
+    public Object visitCastExpression(CastExpression node) {
+        Object value = evaluate(node.getExpression());
+        String targetType = node.getTargetType().toLowerCase(Locale.ROOT);
+        return switch (targetType) {
+            case "integer" -> toLong(value);
+            case "double" -> toDouble(value);
+            case "boolean" -> toBoolean(value);
+            case "string" -> stringify(value);
+            case "char" -> {
+                String text = stringify(value);
+                if (text.isEmpty()) {
+                    yield "\0";
+                }
+                yield text.substring(0, 1);
+            }
+            default -> value;
         };
     }
 
