@@ -18,6 +18,7 @@ import org.nahap.ast.expr.CastExpression;
 import org.nahap.ast.expr.Expression;
 import org.nahap.ast.expr.FunctionCallExpression;
 import org.nahap.ast.expr.LiteralExpression;
+import org.nahap.ast.expr.SystemFunctionCallExpression;
 import org.nahap.ast.expr.UnaryExpression;
 import org.nahap.ast.expr.VariableReferenceExpression;
 import org.nahap.ast.stmt.AssignmentStatement;
@@ -349,6 +350,13 @@ public final class AstPrinter implements AstVisitor<Void> {
     public Void visitFunctionCallExpression(FunctionCallExpression node) {
         line("FunctionCall: " + node.getName());
         withChildren(() -> printExpressions("Arguments", node.getArguments(), true));
+        return null;
+    }
+
+    @Override
+    public Void visitSystemFunctionCallExpression(SystemFunctionCallExpression node) {
+        line("SystemFunctionCall: " + node.getFunction().name().toLowerCase());
+        withChildren(() -> printNode("Argument", node.getArgument(), true));
         return null;
     }
 

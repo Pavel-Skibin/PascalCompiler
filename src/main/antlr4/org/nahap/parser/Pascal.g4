@@ -170,9 +170,16 @@ unaryExpression
 
 primary
     : functionCall
+    | systemFunctionCall
     | variable
     | literal
     | LPAREN expression RPAREN
+    ;
+
+systemFunctionCall
+    : INC LPAREN expression RPAREN
+    | DEC LPAREN expression RPAREN
+    | ABS LPAREN expression RPAREN
     ;
 
 functionCall
@@ -234,6 +241,9 @@ MOD: 'mod';
 NOT: 'not';
 AND: 'and';
 OR: 'or';
+INC: 'inc';
+DEC: 'dec';
+ABS: 'abs';
 
 ASSIGN: ':=';
 DOTDOT: '..';

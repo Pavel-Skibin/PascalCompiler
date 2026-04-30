@@ -11,6 +11,7 @@ import org.nahap.ast.expr.BinaryExpression;
 import org.nahap.ast.expr.CastExpression;
 import org.nahap.ast.expr.FunctionCallExpression;
 import org.nahap.ast.expr.LiteralExpression;
+import org.nahap.ast.expr.SystemFunctionCallExpression;
 import org.nahap.ast.expr.UnaryExpression;
 import org.nahap.ast.expr.VariableReferenceExpression;
 import org.nahap.ast.stmt.AssignmentStatement;
@@ -82,4 +83,6 @@ public interface AstVisitor<T> {
     T visitArrayAccessExpression(ArrayAccessExpression node);
 
     T visitFunctionCallExpression(FunctionCallExpression node);
+
+    T visitSystemFunctionCallExpression(SystemFunctionCallExpression node);
 }

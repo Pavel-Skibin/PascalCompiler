@@ -19,6 +19,7 @@ import org.nahap.ast.expr.Expression;
 import org.nahap.ast.expr.FunctionCallExpression;
 import org.nahap.ast.expr.LiteralExpression;
 import org.nahap.ast.expr.LiteralType;
+import org.nahap.ast.expr.SystemFunctionCallExpression;
 import org.nahap.ast.expr.UnaryExpression;
 import org.nahap.ast.expr.UnaryOperator;
 import org.nahap.ast.expr.VariableReferenceExpression;
@@ -370,6 +371,9 @@ public final class AstBuilder extends PascalBaseVisitor<ASTNode> {
         if (ctx.functionCall() != null) {
             return visit(ctx.functionCall());
         }
+        if (ctx.systemFunctionCall() != null) {
+            return visit(ctx.systemFunctionCall());
+        }
         if (ctx.variable() != null) {
             return visit(ctx.variable());
         }
@@ -386,6 +390,20 @@ public final class AstBuilder extends PascalBaseVisitor<ASTNode> {
                 ? List.of()
                 : collectExpressionList(ctx.argumentList().expression());
         return new FunctionCallExpression(name, arguments);
+    }
+
+    @Override
+    public ASTNode visitSystemFunctionCall(PascalParser.SystemFunctionCallContext ctx) {
+        Expression argument = asExpression(visit(ctx.expression()));
+        SystemFunctionCallExpression.SystemFunction function;
+        if (ctx.INC() != null) {
+            function = SystemFunctionCallExpression.SystemFunction.INC;
+        } else if (ctx.DEC() != null) {
+            function = SystemFunctionCallExpression.SystemFunction.DEC;
+        } else {
+            function = SystemFunctionCallExpression.SystemFunction.ABS;
+        }
+        return new SystemFunctionCallExpression(function, argument);
     }
 
     @Override

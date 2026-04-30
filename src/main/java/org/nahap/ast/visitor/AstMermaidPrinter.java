@@ -15,6 +15,7 @@ import org.nahap.ast.expr.CastExpression;
 import org.nahap.ast.expr.Expression;
 import org.nahap.ast.expr.FunctionCallExpression;
 import org.nahap.ast.expr.LiteralExpression;
+import org.nahap.ast.expr.SystemFunctionCallExpression;
 import org.nahap.ast.expr.UnaryExpression;
 import org.nahap.ast.expr.VariableReferenceExpression;
 import org.nahap.ast.stmt.AssignmentStatement;
@@ -302,6 +303,13 @@ public final class AstMermaidPrinter implements AstVisitor<String> {
     public String visitFunctionCallExpression(FunctionCallExpression node) {
         String id = createNode("FunctionCall: " + node.getName());
         connectExpressions(id, "Arguments", node.getArguments());
+        return id;
+    }
+
+    @Override
+    public String visitSystemFunctionCallExpression(SystemFunctionCallExpression node) {
+        String id = createNode("SystemFunctionCall: " + node.getFunction().name().toLowerCase());
+        connect(id, "Argument", node.getArgument());
         return id;
     }
 }
