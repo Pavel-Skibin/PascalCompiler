@@ -4,10 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.nahap.ast.ProgramNode;
 import org.nahap.ast.visitor.AstPrinter;
 import org.nahap.support.CompilerTestUtils;
+import org.nahap.support.ConsoleTestWatcher;
 
+@ExtendWith(ConsoleTestWatcher.class)
 class OptimizationTest {
     @Test
     void optimizerFoldsConstantArithmetic() {

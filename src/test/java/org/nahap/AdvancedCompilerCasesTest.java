@@ -5,9 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.nahap.runtime.PascalInterpreter;
 import org.nahap.support.CompilerTestUtils;
+import org.nahap.support.ConsoleTestWatcher;
 
+@ExtendWith(ConsoleTestWatcher.class)
 class AdvancedCompilerCasesTest {
     @Test
     void arraysWorkWithinBounds() {
@@ -31,6 +34,7 @@ class AdvancedCompilerCasesTest {
 
         var optimized = CompilerTestUtils.optimize(semantic.getProgram());
         String output = new PascalInterpreter().execute(optimized);
+        System.out.println("[ADVANCED][OUTPUT] arraysWorkWithinBounds -> " + output.replace(System.lineSeparator(), "\\n"));
         assertTrue(output.contains("10 20 30"));
     }
 
@@ -54,6 +58,7 @@ class AdvancedCompilerCasesTest {
         var optimized = CompilerTestUtils.optimize(semantic.getProgram());
         IllegalStateException ex = assertThrows(IllegalStateException.class,
                 () -> new PascalInterpreter().execute(optimized));
+        System.out.println("[ADVANCED][RUNTIME ERROR] " + ex.getMessage());
         assertTrue(ex.getMessage().contains("Array index out of bounds"));
     }
 
@@ -86,7 +91,9 @@ class AdvancedCompilerCasesTest {
 
         var optimized = CompilerTestUtils.optimize(semantic.getProgram());
         String output = new PascalInterpreter().execute(optimized);
+        System.out.println("[ADVANCED][OUTPUT] recursionComputesFactorial -> " + output.replace(System.lineSeparator(), "\\n"));
         assertTrue(output.contains("120"));
+
     }
 
     @Test
@@ -129,7 +136,7 @@ class AdvancedCompilerCasesTest {
 
         var optimized = CompilerTestUtils.optimize(semantic.getProgram());
         String output = new PascalInterpreter().execute(optimized);
-
+        System.out.println("[ADVANCED][OUTPUT] deeperScopesUseNearestVariable -> " + output.replace(System.lineSeparator(), "\\n"));
         assertTrue(output.contains("inner=30"));
         assertTrue(output.contains("outer=20"));
         assertTrue(output.contains("global=10"));
@@ -152,6 +159,7 @@ class AdvancedCompilerCasesTest {
         assertFalse(parsed.syntaxErrors().hasErrors());
 
         var semantic = CompilerTestUtils.semantic(parsed.program());
+        semantic.getDiagnostics().forEach(d -> System.out.println("[ADVANCED][SEMANTIC ERROR] " + d.getMessage()));
         assertTrue(semantic.hasErrors());
         assertTrue(semantic.getDiagnostics().stream()
                 .anyMatch(d -> d.getMessage().contains("Wrong argument count for P")));
@@ -177,6 +185,7 @@ class AdvancedCompilerCasesTest {
         assertFalse(parsed.syntaxErrors().hasErrors());
 
         var semantic = CompilerTestUtils.semantic(parsed.program());
+        semantic.getDiagnostics().forEach(d -> System.out.println("[ADVANCED][SEMANTIC ERROR] " + d.getMessage()));
         assertTrue(semantic.hasErrors());
         assertTrue(semantic.getDiagnostics().stream()
                 .anyMatch(d -> d.getMessage().contains("Wrong argument count for Add")));
@@ -200,6 +209,7 @@ class AdvancedCompilerCasesTest {
         assertFalse(parsed.syntaxErrors().hasErrors());
 
         var semantic = CompilerTestUtils.semantic(parsed.program());
+        semantic.getDiagnostics().forEach(d -> System.out.println("[ADVANCED][SEMANTIC ERROR] " + d.getMessage()));
         assertTrue(semantic.hasErrors());
         assertTrue(semantic.getDiagnostics().stream()
                 .anyMatch(d -> d.getMessage().contains("Function used as procedure: Add")));
@@ -225,6 +235,7 @@ class AdvancedCompilerCasesTest {
         assertFalse(parsed.syntaxErrors().hasErrors());
 
         var semantic = CompilerTestUtils.semantic(parsed.program());
+        semantic.getDiagnostics().forEach(d -> System.out.println("[ADVANCED][SEMANTIC ERROR] " + d.getMessage()));
         assertTrue(semantic.hasErrors());
         assertTrue(semantic.getDiagnostics().stream()
                 .anyMatch(d -> d.getMessage().contains("Procedure used as function: P")));
@@ -254,6 +265,7 @@ class AdvancedCompilerCasesTest {
         assertFalse(parsed.syntaxErrors().hasErrors());
 
         var semantic = CompilerTestUtils.semantic(parsed.program());
+        semantic.getDiagnostics().forEach(d -> System.out.println("[ADVANCED][SEMANTIC ERROR] " + d.getMessage()));
         assertTrue(semantic.hasErrors());
         assertTrue(semantic.getDiagnostics().stream()
                 .anyMatch(d -> d.getMessage().contains("Type mismatch in argument 1 of NeedsBool")));

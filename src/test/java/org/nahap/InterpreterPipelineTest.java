@@ -6,9 +6,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.nahap.runtime.PascalInterpreter;
 import org.nahap.support.CompilerTestUtils;
+import org.nahap.support.ConsoleTestWatcher;
 
+@ExtendWith(ConsoleTestWatcher.class)
 class InterpreterPipelineTest {
     @Test
     void fullPipelineExecutesValidBasicProgram() throws Exception {
@@ -20,6 +23,7 @@ class InterpreterPipelineTest {
 
         var optimized = CompilerTestUtils.optimize(semantic.getProgram());
         String output = new PascalInterpreter().execute(optimized);
+        System.out.println("[PIPELINE][OUTPUT] valid_basic.pas -> " + output.replace(System.lineSeparator(), "\\n"));
 
         assertTrue(output.contains("result: 32"));
     }
@@ -34,6 +38,7 @@ class InterpreterPipelineTest {
 
         var optimized = CompilerTestUtils.optimize(semantic.getProgram());
         String output = new PascalInterpreter().execute(optimized);
+        System.out.println("[PIPELINE][OUTPUT] valid_nested.pas -> " + output.replace(System.lineSeparator(), "\\n"));
 
         assertTrue(output.contains("inner=6"));
     }
@@ -44,6 +49,7 @@ class InterpreterPipelineTest {
         assertFalse(parsed.syntaxErrors().hasErrors());
 
         var semantic = CompilerTestUtils.semantic(parsed.program());
+        semantic.getDiagnostics().forEach(d -> System.out.println("[PIPELINE][SEMANTIC ERROR] " + d.getMessage()));
         assertTrue(semantic.hasErrors());
     }
 
@@ -57,6 +63,7 @@ class InterpreterPipelineTest {
 
         var optimized = CompilerTestUtils.optimize(semantic.getProgram());
         String output = new PascalInterpreter().execute(optimized);
+        System.out.println("[PIPELINE][OUTPUT] valid_recursion_factorial_file.pas -> " + output.replace(System.lineSeparator(), "\\n"));
 
         assertTrue(output.contains("fact=720"));
     }
@@ -71,7 +78,23 @@ class InterpreterPipelineTest {
 
         var optimized = CompilerTestUtils.optimize(semantic.getProgram());
         String output = new PascalInterpreter().execute(optimized);
+        System.out.println("[PIPELINE][OUTPUT] valid_control_flow_file.pas -> " + output.replace(System.lineSeparator(), "\\n"));
 
         assertTrue(output.contains("ok=20"));
+    }
+
+    @Test
+    void fullPipelineExecutesCastAssignmentProgramFromFile() throws Exception {
+        var parsed = CompilerTestUtils.parseFile(Path.of("src/test/resources/valid_semantic_cast_assignment_file.pas"));
+        assertFalse(parsed.syntaxErrors().hasErrors());
+
+        var semantic = CompilerTestUtils.semantic(parsed.program());
+        assertFalse(semantic.hasErrors());
+
+        var optimized = CompilerTestUtils.optimize(semantic.getProgram());
+        String output = new PascalInterpreter().execute(optimized);
+        System.out.println("[PIPELINE][OUTPUT] valid_semantic_cast_assignment_file.pas -> " + output.replace(System.lineSeparator(), "\\n"));
+
+        assertTrue(output.contains("cast=10"));
     }
 }
