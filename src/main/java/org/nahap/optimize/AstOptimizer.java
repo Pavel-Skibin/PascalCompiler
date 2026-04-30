@@ -17,6 +17,7 @@ import org.nahap.ast.expr.Expression;
 import org.nahap.ast.expr.FunctionCallExpression;
 import org.nahap.ast.expr.LiteralExpression;
 import org.nahap.ast.expr.LiteralType;
+import org.nahap.ast.expr.SystemFunctionCallExpression;
 import org.nahap.ast.expr.UnaryExpression;
 import org.nahap.ast.expr.UnaryOperator;
 import org.nahap.ast.stmt.AssignmentStatement;
@@ -199,6 +200,12 @@ public final class AstOptimizer {
             return new FunctionCallExpression(functionCallExpression.getName(), args);
         }
 
+        if (expression instanceof SystemFunctionCallExpression systemCall) {
+            Expression arg = optimizeExpression(systemCall.getArgument());
+            LiteralExpression folded = tryFoldSystemFunction(systemCall.getFunction(), arg);
+            return folded != null ? folded : new SystemFunctionCallExpression(systemCall.getFunction(), arg);
+        }
+
         return expression;
     }
 
@@ -250,6 +257,44 @@ public final class AstOptimizer {
             }
         }
         return null;
+    }
+
+    private LiteralExpression tryFoldSystemFunction(SystemFunctionCallExpression.SystemFunction function, Expression arg) {
+        if (!(arg instanceof LiteralExpression literal)) {
+            return null;
+        }
+
+        return switch (function) {
+            case INC -> {
+                if (literal.getType() == LiteralType.INTEGER) {
+                    yield new LiteralExpression(Long.toString(Long.parseLong(literal.getText()) + 1L), LiteralType.INTEGER);
+                }
+                if (literal.getType() == LiteralType.REAL) {
+                    yield new LiteralExpression(Double.toString(Double.parseDouble(literal.getText()) + 1.0), LiteralType.REAL);
+                }
+                yield null;
+            }
+            case DEC -> {
+                if (literal.getType() == LiteralType.INTEGER) {
+                    yield new LiteralExpression(Long.toString(Long.parseLong(literal.getText()) - 1L), LiteralType.INTEGER);
+                }
+                if (literal.getType() == LiteralType.REAL) {
+                    yield new LiteralExpression(Double.toString(Double.parseDouble(literal.getText()) - 1.0), LiteralType.REAL);
+                }
+                yield null;
+            }
+            case ABS -> {
+                if (literal.getType() == LiteralType.INTEGER) {
+                    long value = Long.parseLong(literal.getText());
+                    yield new LiteralExpression(Long.toString(Math.abs(value)), LiteralType.INTEGER);
+                }
+                if (literal.getType() == LiteralType.REAL) {
+                    double value = Double.parseDouble(literal.getText());
+                    yield new LiteralExpression(Double.toString(Math.abs(value)), LiteralType.REAL);
+                }
+                yield null;
+            }
+        };
     }
 
     private LiteralExpression tryFoldBinary(BinaryOperator operator, Expression left, Expression right) {

@@ -28,6 +28,7 @@ import org.nahap.ast.expr.Expression;
 import org.nahap.ast.expr.FunctionCallExpression;
 import org.nahap.ast.expr.LiteralExpression;
 import org.nahap.ast.expr.LiteralType;
+import org.nahap.ast.expr.SystemFunctionCallExpression;
 import org.nahap.ast.expr.UnaryExpression;
 import org.nahap.ast.expr.UnaryOperator;
 import org.nahap.ast.expr.VariableReferenceExpression;
@@ -362,6 +363,58 @@ public final class PascalInterpreter implements AstVisitor<Object> {
         FunctionBinding binding = resolveFunction(node.getName());
         List<Object> argumentValues = evaluateExpressions(node.getArguments());
         return invokeFunction(binding, argumentValues);
+    }
+
+    @Override
+    public Object visitSystemFunctionCallExpression(SystemFunctionCallExpression node) {
+        Object value = evaluate(node.getArgument());
+        return switch (node.getFunction()) {
+            case INC -> {
+                if (value instanceof Long) {
+                    yield ((Long) value) + 1L;
+                }
+                if (value instanceof Double real) {
+                    yield real + 1.0;
+                }
+                if (value instanceof Number number) {
+                    if (value instanceof Double || value instanceof Float) {
+                        yield number.doubleValue() + 1.0;
+                    }
+                    yield number.longValue() + 1L;
+                }
+                throw new IllegalStateException("Inc requires numeric value");
+            }
+            case DEC -> {
+                if (value instanceof Long) {
+                    yield ((Long) value) - 1L;
+                }
+                if (value instanceof Double real) {
+                    yield real - 1.0;
+                }
+                if (value instanceof Number number) {
+                    if (value instanceof Double || value instanceof Float) {
+                        yield number.doubleValue() - 1.0;
+                    }
+                    yield number.longValue() - 1L;
+                }
+                throw new IllegalStateException("Dec requires numeric value");
+            }
+            case ABS -> {
+                if (value instanceof Long l) {
+                    yield Math.abs(l);
+                }
+                if (value instanceof Double d) {
+                    yield Math.abs(d);
+                }
+                if (value instanceof Number number) {
+                    if (value instanceof Double || value instanceof Float) {
+                        yield Math.abs(number.doubleValue());
+                    }
+                    yield Math.abs(number.longValue());
+                }
+                throw new IllegalStateException("Abs requires numeric value");
+            }
+        };
     }
 
     private Object evaluate(Expression expression) {

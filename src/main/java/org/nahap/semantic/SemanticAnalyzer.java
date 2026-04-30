@@ -22,6 +22,7 @@ import org.nahap.ast.expr.Expression;
 import org.nahap.ast.expr.FunctionCallExpression;
 import org.nahap.ast.expr.LiteralExpression;
 import org.nahap.ast.expr.LiteralType;
+import org.nahap.ast.expr.SystemFunctionCallExpression;
 import org.nahap.ast.expr.UnaryExpression;
 import org.nahap.ast.expr.UnaryOperator;
 import org.nahap.ast.expr.VariableReferenceExpression;
@@ -394,6 +395,10 @@ public final class SemanticAnalyzer {
             return analyzeBinaryExpression(binaryExpression);
         }
 
+        if (expression instanceof SystemFunctionCallExpression systemFunctionCall) {
+            return analyzeSystemFunction(systemFunctionCall);
+        }
+
         if (expression instanceof FunctionCallExpression functionCallExpression) {
             CallableSymbol symbol = resolveCallable(functionCallExpression.getName());
             if (symbol == null) {
@@ -449,6 +454,29 @@ public final class SemanticAnalyzer {
         }
 
         return analyzeRelationalBinary(operator, left, right);
+    }
+
+    private TypedExpression analyzeSystemFunction(SystemFunctionCallExpression call) {
+        TypedExpression argument = analyzeExpression(call.getArgument());
+
+        return switch (call.getFunction()) {
+            case INC, DEC -> {
+                if (!argument.type().isNumeric()) {
+                    diagnose("Inc/Dec requires numeric argument, got " + argument.type());
+                }
+                yield new TypedExpression(
+                        new SystemFunctionCallExpression(call.getFunction(), argument.expression()),
+                        argument.type());
+            }
+            case ABS -> {
+                if (!argument.type().isNumeric()) {
+                    diagnose("Abs requires numeric argument, got " + argument.type());
+                }
+                yield new TypedExpression(
+                        new SystemFunctionCallExpression(call.getFunction(), argument.expression()),
+                        argument.type());
+            }
+        };
     }
 
     private TypedExpression analyzeArithmeticBinary(

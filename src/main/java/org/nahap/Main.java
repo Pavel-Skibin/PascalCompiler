@@ -25,20 +25,26 @@ import org.nahap.semantic.SemanticAnalyzer;
 public class Main {
     private static final String AST_MARKDOWN_FILE = "ast.md";
 
-    private static final String PAS_FILE_PATH = "src/test/resources/valid_loops_io.pas";
+    private static final String PAS_FILE_PATH = "src/test/resources/validFileProgramInjectsCastForIntegerToDoubleAssignment.pas";
 
     private static final String INLINE_PASCAL_CODE =
             """
-                    program BasicDemo;
-                    var
-                      a, b, c : integer;
-                    begin
-                      a := 10;
-                      b := 20;
-                      WriteLn('a = ', a);
-                      WriteLn('b = ', b);
-                      WriteLn('sum = ', (a + b) * 3 + 2);
-                    end.
+                program RecursionDemo;
+                var
+                  result: integer;
+
+                function Fact(n: integer): integer;
+                begin
+                  if n <= 1 then
+                    Fact := 1
+                  else
+                    Fact := n * Fact(n - 1);
+                end;
+
+                begin
+                  result := Fact(5);
+                  WriteLn(result);
+                end.
             """;
 
     public static void main(String[] args) {
