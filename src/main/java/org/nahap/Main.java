@@ -21,6 +21,7 @@ import org.nahap.parser.SyntaxErrorListener;
 import org.nahap.runtime.PascalInterpreter;
 import org.nahap.semantic.SemanticAnalysisResult;
 import org.nahap.semantic.SemanticAnalyzer;
+import org.nahap.vm.SimpleVmExecutor;
 
 public class Main {
     private static final String AST_MARKDOWN_FILE = "ast.md";
@@ -49,7 +50,8 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-            CharStream input = resolveInput(args);
+            boolean vmBackend = containsFlag(args, "--vm");
+            CharStream input = resolveInput(filterPositionalArguments(args));
             PascalLexer lexer = new PascalLexer(input);
             PascalParser parser = new PascalParser(new CommonTokenStream(lexer));
 
@@ -83,15 +85,18 @@ public class Main {
             AstOptimizer optimizer = new AstOptimizer();
             ProgramNode optimizedProgram = optimizer.optimize(typedProgram);
 
-            AstPrinter astPrinter = new AstPrinter();
-            System.out.print(astPrinter.print(optimizedProgram));
+            if (!vmBackend) {
+                AstPrinter astPrinter = new AstPrinter();
+                System.out.print(astPrinter.print(optimizedProgram));
 
-            AstMermaidPrinter mermaidPrinter = new AstMermaidPrinter();
-            String markdown = toMarkdown(mermaidPrinter.print(optimizedProgram));
-            saveAstMarkdown(markdown);
+                AstMermaidPrinter mermaidPrinter = new AstMermaidPrinter();
+                String markdown = toMarkdown(mermaidPrinter.print(optimizedProgram));
+                saveAstMarkdown(markdown);
+            }
 
-            PascalInterpreter interpreter = new PascalInterpreter();
-            String executionOutput = interpreter.execute(optimizedProgram);
+            String executionOutput = vmBackend
+                    ? new SimpleVmExecutor().execute(optimizedProgram)
+                    : new PascalInterpreter().execute(optimizedProgram);
 
             System.out.println("Program output:");
             if (executionOutput.isEmpty()) {
@@ -182,6 +187,25 @@ public class Main {
         if (!candidates.contains(candidate)) {
             candidates.add(candidate);
         }
+    }
+
+    private static boolean containsFlag(String[] args, String flag) {
+        for (String arg : args) {
+            if (flag.equalsIgnoreCase(arg)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static String[] filterPositionalArguments(String[] args) {
+        List<String> positional = new ArrayList<>();
+        for (String arg : args) {
+            if (!arg.startsWith("--")) {
+                positional.add(arg);
+            }
+        }
+        return positional.toArray(String[]::new);
     }
 
     private static Path findProjectRoot(Path start) {
